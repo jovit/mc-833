@@ -211,6 +211,63 @@ br-a10973c7ec6c: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
 \section{traceroute}
 \subsection{Quantos roteadores estão entre a sua estação e o host www.amazon.com? Pelos nomes dos roteadores, quantos deles estão localizados no Brasil?}
 
+Executando o comando \emph{traceroute} para o endereço \emph{www.amazon.com} obtemos: 
+
+\begin{lstlisting}[language=bash]
+        $ traceroute www.amazon.com   
+        traceroute to www.amazon.com (13.33.130.223), 30 hops max, 60 byte packets
+         1  _gateway (192.168.100.1)  0.390 ms  0.344 ms  0.288 ms
+         2  192.168.0.1 (192.168.0.1)  1.439 ms  1.494 ms  1.341 ms
+         3  10.21.0.1 (10.21.0.1)  14.750 ms  8.691 ms  14.799 ms
+         4  c94c1001.virtua.com.br (201.76.16.1)  17.870 ms  17.867 ms  18.191 ms
+         5  embratel-G0-5-3-2-tacc01.cas.embratel.net.br (200.174.243.53)  20.587 ms embratel-T0-3-0-0-uacc02.cas.embratel.net.br (189.16.179.53)  22.126 ms  22.086 ms
+         6  ebt-H0-7-0-3-tcore01.cas.embratel.net.br (200.244.213.103)  33.239 ms ebt-H0-4-0-0-tcore01.cas.embratel.net.br (200.244.212.61)  36.143 ms ebt-H0-7-0-3-tcore01.cas.embratel.net.br (200.244.213.103)  24.095 ms
+         7  ebt-B1191-tcore01.spo.embratel.net.br (200.230.252.130)  35.167 ms  33.017 ms  24.929 ms
+         8  ebt-B2111-tcore01.rjo.embratel.net.br (200.230.251.1)  37.181 ms  31.957 ms  33.497 ms
+         9  ebt-H0-2-0-1-uacc04.rjoen.embratel.net.br (200.244.211.210)  30.454 ms  30.465 ms ebt-H0-7-0-1-uacc04.rjoen.embratel.net.br (200.244.211.214)  30.384 ms
+        10  peer-B55-uacc04.rjoen.embratel.net.br (189.87.140.110)  30.038 ms  28.433 ms  28.439 ms
+        11  52.93.67.58 (52.93.67.58)  27.497 ms peer-B55-uacc04.rjoen.embratel.net.br (189.87.140.110)  26.865 ms  21.708 ms
+        12  52.93.67.197 (52.93.67.197)  30.382 ms 52.93.67.199 (52.93.67.199)  30.470 ms *
+        13  * * *
+        ...
+\end{lstlisting}
+
+Cosiderando o roteador \emph{gateway} local, temos um total de 12 roteadores entre a minha interface de rede e o host \emph{www.amazon.com}.
+
+Podemos observar que até o roteador de número \textbf{10}, os roteadores estão localizados no Brasil, uma vez que possuem nomes relacionados à Embratel ou à Net Virtua.
+E a partir do roteador \textbf{11}, podemos observar por meio do comando \emph{whois} que os endereços dos roteadores \emph{11} e \emph{12} são pertencentes à \emph{amazon}.
+
+\begin{lstlisting}[language=bash]
+        $whois 52.93.67.58
+        ... 
+        OrgName:        Amazon Technologies Inc.
+        OrgId:          AT-88-Z
+        Address:        410 Terry Ave N.
+        City:           Seattle
+        StateProv:      WA
+        PostalCode:     98109
+        Country:        US
+        ...
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=bash]
+        $whois 52.93.67.197
+        ... 
+        OrgName:        Amazon Technologies Inc.
+        OrgId:          AT-88-Z
+        Address:        410 Terry Ave N.
+        City:           Seattle
+        StateProv:      WA
+        PostalCode:     98109
+        Country:        US
+        ...
+\end{lstlisting}
+
+
+
+
+
 \section{telnet}
 \subsection{É possível conectar-se com este comando em um servidor HTTP? Se sim, como deve-se executar o comando para conectar-se no host www.amazon.com na porta padrão do HTTP?}
 \subsection{Caso não haja um servidor escutando na porta passada pelo comando telnet, o que ocorre? Justifique.}
