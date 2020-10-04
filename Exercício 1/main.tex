@@ -270,10 +270,69 @@ E a partir do roteador \textbf{11}, podemos observar por meio do comando \emph{w
 
 \section{telnet}
 \subsection{É possível conectar-se com este comando em um servidor HTTP? Se sim, como deve-se executar o comando para conectar-se no host www.amazon.com na porta padrão do HTTP?}
+É possível sim conectar-se a um servidor \textbf{HTTP} utilizando o \emph{telnet}, para isso é necessário especificar qual porta à ser utilizada, que no caso do \textbf{HTTP} é por padrão a porta \textbf{80}.
+\begin{lstlisting}[language=bash]
+        $ telnet amazon.com 80
+        Trying 176.32.103.205...
+        Connected to amazon.com.
+        Escape character is '^]'.
+\end{lstlisting}
+
+
 \subsection{Caso não haja um servidor escutando na porta passada pelo comando telnet, o que ocorre? Justifique.}
+
+Caso não exista um servidor na porta passada para o \emph{telnet} a conexão não é estabelecida, uma vez que é necessário existir um processo sendo executado na porta requisitada para que seja possível estabelecer uma conexão \emph{TCP} para o telnet criar um terminal remoto e enviar comandos.
+\begin{lstlisting}[language=bash]
+        $ telnet amazon.com 81
+        Trying 176.32.98.166...
+        Trying 176.32.103.205...
+        Trying 205.251.242.103...
+        telnet: Unable to connect to remote host: Connection refused
+\end{lstlisting}
+
+
+
 \subsection{A qual a camada da rede o telnet pertence?}
+O telnet pertence à camada de \textbf{Aplicação}, uma vez que ele é um protocolo criado para enviar comandos de outros procolos de \textbf{Aplicação} como HTTP e FTP, por meio do protocolo da camada de transporte \textbf{TCP}. 
+
 
 \section{Acesse o site da DAC (https://www.dac.unicamp.br/) e, em paralelo em um terminal, verifique a saída do comando netstat. Quais são as informações fornecidas a respeito da conexão ao site da DAC?}
+Iremos utilizar o comando \emph{netstat} em conjunto com as flags \emph{-antp}, onde:
+\begin{itemize}
+	\item \textbf{-a}: Mostra todos os sockets, estabelecidos (\emph{listening} e \emph{non-listening} no caso do TCP). 
+	\item \textbf{-n}: Exibe os valores numéricos dos endereços, sem realizar uma resolução.
+	\item \textbf{-t}: Exibe somente as conexões \emph{TCP} estabelecidas.
+	\item \textbf{-p}: Exibe o \emph{PID} do processo a qual o socket pertence, que no caso serão \emph{PIDs} do Chrome para a conexão ao site da DAC.
+\end{itemize}
+
+Então executando o comando, com o site da DAC aberto obtemos:
+
+\begin{lstlisting}[language=bash]
+        $ netstat -antp   
+        (Not all processes could be identified, non-owned process info
+         will not be shown, you would have to be root to see it all.)
+        Active Internet connections (servers and established)
+        Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name    
+        ...
+        tcp        0      0 192.168.100.128:45824   143.106.227.165:443     ESTABLISHED 25502/chrome --type 
+        ...
+\end{lstlisting}
+
+Onde é possível observar a conexão TCP entre o servidor do site da DAC e o host local.
+
+Então nesse caso temos uma conexão do hospedeiro local na porta \emph{45824} para o servidor da DAC (\emph{143.106.227.165}) na porta \emph{443}.
+
+Além disso temos o estado da conexão \textbf{HTTP} que no caso é \emph{ESTABLISHED} e o PID do processo local que é dono desse socket, que no caso é o Chrome com PID \emph{25502}.
+
+Além dessa conexão por onde foi transmitido o documento da página em si, foram abertas outras conexões para a obtenção de recursos requisitados pelo documento \textbf{HTML}, como por exemplo fontes de texto requisitadas para o servidor da Google, que gerou a seguinte conexão:
+
+\begin{lstlisting}[language=bash]
+        $ netstat -antp   
+        ...
+        tcp        0      0 192.168.100.128:51450   172.217.173.74:443      ESTABLISHED 25502/chrome --type 
+        ...
+\end{lstlisting}
+
 
 \section{TCPDUMP}
 \subsection{Utilizando o TCPDUMP corretamente com os filtros é possível somente capturar o tráfego HTTPS? Se sim, execute o comando junto com os filtros e anexe uma figura que comprove sua resposta no relatório. Se sua resposta foi não, então justifique-a.}
