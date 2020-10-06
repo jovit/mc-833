@@ -336,8 +336,40 @@ Além dessa conexão por onde foi transmitido o documento da página em si, fora
 
 \section{TCPDUMP}
 \subsection{Utilizando o TCPDUMP corretamente com os filtros é possível somente capturar o tráfego HTTPS? Se sim, execute o comando junto com os filtros e anexe uma figura que comprove sua resposta no relatório. Se sua resposta foi não, então justifique-a.}
+
+É possível sim, podemos capturar o tráfego HTTPS por meio do comando \emph{tcpdump -nnSX port 443}, onde o mais importante no comando é o filtro pela porta \textbf{443}, que é por onde é feito a transferência dos pacotes criptografados do \emph{HTTPS}.
+
+As flags passadas \emph{nnSX} são utilizadas para mostrar o conteúdo de cada pacote interceptado (-X) e formatar a saída, como não converter endereços IP (-n) e mostrar o valor absoluto do número de sequência dos pacotes TCP (-S).
+
+\begin{figure}
+  \includegraphics[height=4in]{tcpdump.png}
+  \caption{Execução do comando tcpdump para capturar pacotes HTTPS.}
+\end{figure}
+
 \subsection{Utilizando o comando TCPDUMP seguido dos parâmetros corretos imprima somente os pacotes superiores a 64 bits. Indique qual foi a sequência de comandos utilizada.}
+
+Por meio da execução do comando \emph{sudo tcpdump -nnSX port 443 and greater 8} é possível filtrar os pacotes pelos seus tamanhos. Em específico o filtro \emph{greater} que filtra os pacotes exibidos pelo seu tamanho em \emph{bytes}, ou seja, passando o valor \textbf{8} selecionamos apenas pacotes com tamanho maior que 64 bits.
+
+\begin{figure}
+        \includegraphics[height=4in]{tcpdump64.png}
+        \caption{Execução do comando tcpdump para capturar pacotes HTTPS maiores que 64 bits (8 bytes).}
+\end{figure}
+
+
+
 \subsection{Utilizando o TCPDUMP seguido de filtros, imprima somente os resultados que tiverem a flag ‘ACK’. Insira o comando seguido dos filtros e uma figura no seu relatório para comprovar o sucesso.}
+
+Podemos filtrar somente pacotes com flag \emph{ACK} por meio do comando:
+
+\begin{lstlisting}[language=bash]
+sudo tcpdump -nnSX "tcp[tcpflags] & (tcp-ack) != 0"
+\end{lstlisting}
+
+
+\begin{figure}
+        \includegraphics[height=4in]{tcpdumpack.png}
+        \caption{Execução do comando tcpdump para capturar pacotes com flag ACK.}
+\end{figure}
 
 \section{Wireshark}
 
