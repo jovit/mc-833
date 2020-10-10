@@ -90,23 +90,23 @@
 \begin{document}
 
 \begin{titlepage}
-    \begin{center}
-        \vspace*{1cm}
-        \includegraphics[width=0.25\textwidth]{Logo}\\
-        \vspace{1.5cm}
-        \Huge
-        \textbf{Exercício 1}\\
-        \vspace{1.5cm}
-        \Large
-        \textbf{Aluno}: João Vitor Gonçalves\\
-        \textbf{RA}: 176353\\
-        \vspace{1.2cm}
-        \Large
-        Instituto de Computação\\
-        Universidade Estadual de Campinas\\
-        \vspace{1.5cm}
-        Campinas, 23 de Setembro de 2020.
-    \end{center}
+        \begin{center}
+                \vspace*{1cm}
+                \includegraphics[width=0.25\textwidth]{Logo}\\
+                \vspace{1.5cm}
+                \Huge
+                \textbf{Exercício 1}\\
+                \vspace{1.5cm}
+                \Large
+                \textbf{Aluno}: João Vitor Gonçalves\\
+                \textbf{RA}: 176353\\
+                \vspace{1.2cm}
+                \Large
+                Instituto de Computação\\
+                Universidade Estadual de Campinas\\
+                \vspace{1.5cm}
+                Campinas, 23 de Setembro de 2020.
+        \end{center}
 \end{titlepage}
 \tableofcontents
 \clearpage
@@ -206,12 +206,36 @@ br-a10973c7ec6c: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
 
 \section{nslookup}
 \subsection{Quais são os endereços IP do host www.unicamp.br?}
+
+\begin{lstlisting}[language=bash]
+        $ nslookup www.unicamp.br
+        Server:		127.0.0.53
+        Address:	127.0.0.53#53
+
+        Non-authoritative answer:
+        www.unicamp.br	canonical name = 143-106-143-186.nuvem.unicamp.br.
+        Name:	143-106-143-186.nuvem.unicamp.br
+        Address: 143.106.143.186
+\end{lstlisting}
+
+O endereço retornado pelo \emph{nslookup} para o host \textbf{www.unicamp.br} é \emph{143.106.143.186}
+
 \subsection{Há alguma vantagem em haver mais de um endereço IP?}
+
+Existem sim algumas vantagens em se ter mais de um endereço IP para um domínio.
+
+A primeira e mais óbvia é por questões de redundância. Caso o servidor que responde por um dos endereços se torne irresponsivo, existem endereços de outros servidores que ainda podem estar funcionando mantendo assim o serviço ativo, mesmo que parcialmente.
+
+Outro motivo é por questões geograficas, onde podemos ter endereços IPs que apontem para sevidores mais próximos geograficamente dos usuários, diminuindo assim a latência de resposta.
+
+Um terceiro motivo pode ser por questões de balanceamento de tráfego, caso exista mais de um endereço IP disponível para um domínio, as requisições serão direcionas de forma randômica entre eles, dividindo assim a carga total.
+
+Existem inúmeros outros motivos pelos quais ter mais de um endereço IP pode ser desejável, mas resumindo, existem sim vantagens.
 
 \section{traceroute}
 \subsection{Quantos roteadores estão entre a sua estação e o host www.amazon.com? Pelos nomes dos roteadores, quantos deles estão localizados no Brasil?}
 
-Executando o comando \emph{traceroute} para o endereço \emph{www.amazon.com} obtemos: 
+Executando o comando \emph{traceroute} para o endereço \emph{www.amazon.com} obtemos:
 
 \begin{lstlisting}[language=bash]
         $ traceroute www.amazon.com   
@@ -293,16 +317,16 @@ Caso não exista um servidor na porta passada para o \emph{telnet} a conexão n�
 
 
 \subsection{A qual a camada da rede o telnet pertence?}
-O telnet pertence à camada de \textbf{Aplicação}, uma vez que ele é um protocolo criado para enviar comandos de outros procolos de \textbf{Aplicação} como HTTP e FTP, por meio do protocolo da camada de transporte \textbf{TCP}. 
+O telnet pertence à camada de \textbf{Aplicação}, uma vez que ele é um protocolo criado para enviar comandos de outros procolos de \textbf{Aplicação} como HTTP e FTP, por meio do protocolo da camada de transporte \textbf{TCP}.
 
 
 \section{Acesse o site da DAC (https://www.dac.unicamp.br/) e, em paralelo em um terminal, verifique a saída do comando netstat. Quais são as informações fornecidas a respeito da conexão ao site da DAC?}
 Iremos utilizar o comando \emph{netstat} em conjunto com as flags \emph{-antp}, onde:
 \begin{itemize}
-	\item \textbf{-a}: Mostra todos os sockets, estabelecidos (\emph{listening} e \emph{non-listening} no caso do TCP). 
-	\item \textbf{-n}: Exibe os valores numéricos dos endereços, sem realizar uma resolução.
-	\item \textbf{-t}: Exibe somente as conexões \emph{TCP} estabelecidas.
-	\item \textbf{-p}: Exibe o \emph{PID} do processo a qual o socket pertence, que no caso serão \emph{PIDs} do Chrome para a conexão ao site da DAC.
+        \item \textbf{-a}: Mostra todos os sockets, estabelecidos (\emph{listening} e \emph{non-listening} no caso do TCP).
+        \item \textbf{-n}: Exibe os valores numéricos dos endereços, sem realizar uma resolução.
+        \item \textbf{-t}: Exibe somente as conexões \emph{TCP} estabelecidas.
+        \item \textbf{-p}: Exibe o \emph{PID} do processo a qual o socket pertence, que no caso serão \emph{PIDs} do Chrome para a conexão ao site da DAC.
 \end{itemize}
 
 Então executando o comando, com o site da DAC aberto obtemos:
@@ -333,6 +357,18 @@ Além dessa conexão por onde foi transmitido o documento da página em si, fora
         ...
 \end{lstlisting}
 
+Filtrando os resultados do \emph{netstat} para todas as conexões contendo o endereço IP da DAC, temos:
+
+\begin{lstlisting}[language=bash]
+        $ netstat -antp | grep "143.106.227.165:443"  
+        (Not all processes could be identified, non-owned process info
+        will not be shown, you would have to be root to see it all.)
+        tcp        0      0 192.168.100.128:43234   143.106.227.165:443     ESTABLISHED 5429/chrome --type= 
+        tcp        0      0 192.168.100.128:43232   143.106.227.165:443     ESTABLISHED 5429/chrome --type= 
+        tcp        0      0 192.168.100.128:43244   143.106.227.165:443     ESTABLISHED 5429/chrome --type= 
+\end{lstlisting}
+
+Ou seja, foram criadas 3 conexões TCP entre o hospedeiro local e o servidor da DAC ao acessar o site. Isso pode ser feito pelo navegador como forma de carregar objetos da página HTML de forma concorrente.
 
 \section{TCPDUMP}
 \subsection{Utilizando o TCPDUMP corretamente com os filtros é possível somente capturar o tráfego HTTPS? Se sim, execute o comando junto com os filtros e anexe uma figura que comprove sua resposta no relatório. Se sua resposta foi não, então justifique-a.}
@@ -341,20 +377,19 @@ Além dessa conexão por onde foi transmitido o documento da página em si, fora
 
 As flags passadas \emph{nnSX} são utilizadas para mostrar o conteúdo de cada pacote interceptado (-X) e formatar a saída, como não converter endereços IP (-n) e mostrar o valor absoluto do número de sequência dos pacotes TCP (-S).
 
-\begin{figure}
-  \includegraphics[height=4in]{tcpdump.png}
-  \caption{Execução do comando tcpdump para capturar pacotes HTTPS.}
+\begin{figure}[H]
+        \includegraphics[width=\linewidth]{tcpdump.png}
+        \caption{Execução do comando tcpdump para capturar pacotes HTTPS.}
 \end{figure}
 
 \subsection{Utilizando o comando TCPDUMP seguido dos parâmetros corretos imprima somente os pacotes superiores a 64 bits. Indique qual foi a sequência de comandos utilizada.}
 
 Por meio da execução do comando \emph{sudo tcpdump -nnSX port 443 and greater 8} é possível filtrar os pacotes pelos seus tamanhos. Em específico o filtro \emph{greater} que filtra os pacotes exibidos pelo seu tamanho em \emph{bytes}, ou seja, passando o valor \textbf{8} selecionamos apenas pacotes com tamanho maior que 64 bits.
 
-\begin{figure}
-        \includegraphics[height=4in]{tcpdump64.png}
+\begin{figure}[H]
+        \includegraphics[width=\linewidth]{tcpdump64.png}
         \caption{Execução do comando tcpdump para capturar pacotes HTTPS maiores que 64 bits (8 bytes).}
 \end{figure}
-
 
 
 \subsection{Utilizando o TCPDUMP seguido de filtros, imprima somente os resultados que tiverem a flag ‘ACK’. Insira o comando seguido dos filtros e uma figura no seu relatório para comprovar o sucesso.}
@@ -366,8 +401,8 @@ sudo tcpdump -nnSX "tcp[tcpflags] & (tcp-ack) != 0"
 \end{lstlisting}
 
 
-\begin{figure}
-        \includegraphics[height=4in]{tcpdumpack.png}
+\begin{figure}[H]
+        \includegraphics[width=\linewidth]{tcpdumpack.png}
         \caption{Execução do comando tcpdump para capturar pacotes com flag ACK.}
 \end{figure}
 
@@ -376,7 +411,38 @@ sudo tcpdump -nnSX "tcp[tcpflags] & (tcp-ack) != 0"
 
 \subsection{Comparado às demais ferramentas apresentadas na aula de MC833 descreva quais são principais diferenças e vantagens de usar o Wireshark? Escolha pelo menos uma ferramenta/sniffer e elabore uma tabela comparativa para responder a questão.}
 
-\subsection{Em uma rede com vários processos acontecendo ao mesmo tempo é possível gerenciar de forma isolada um único processo específico na rede utilizando ferramentas/sniffers apresentados nesta disciplina? Se sim, quais ferramentas e/ou sniffers você usaria? Justifique sua resposta. (OBS: Não é necessário apresentar comandos ou prints)}
+Comparando o \emph{Wireshark} ao sniffer \emph{TCPDUMP}.
+% https://www.youtube.com/watch?v=76BdFaJs_ts
 
 
+\begin{table}[H]
+        \begin{tabular}{|l|l|lll}
+                \cline{1-3}
+                                                & TCPDUMP & \multicolumn{1}{l|}{Wireshark} &  & \\ \cline{1-3}
+                UI                              & CLI     & \multicolumn{1}{l|}{GUI}       &  & \\ \cline{1-3}
+                API                             & libcap  & \multicolumn{1}{l|}{libcap}    &  & \\ \cline{1-3}
+                Simple \emph{SSH} Remote Access & YES     & \multicolumn{1}{l|}{NO}        &  & \\ \cline{1-3}
+                Isolate TCP Session Streams     & NO      & \multicolumn{1}{l|}{YES}       &  & \\ \cline{1-3}
+        \end{tabular}
+\end{table}
+
+O Wireshark é um dos sniffers de rede mais conhecidos, tanto por ser extremamente versátil e de fácil utilização. Pelo fato de ele ser uma aplicação com interface gráfica, é mais simples de se obter informações necessárias sobre pacotes e acompanhar transmissões de uma certa conexão.
+Comparativamente com o TCPDUMP, essa manipulação deve ser toda feita por seus filtros na linha de comando e manipulação do seu output com outras ferramentas de linha de comando como o \emph{awk} e o \emph{grep}.
+
+Porém tecnicamente, como ambas as ferramentas utilizam a mesma api para realizar o monitoramento da rede, é possível fazer as mesmas análises com ambas, mesmo que sendo necessário o uso de ferramentas externas no caso do TCPDUMP.
+
+Onde o TCPDUMP também leva uma certa vantagem é por ser uma ferramenta de linha de comando, uma vez que não é sempre possível de se utilizar uma interface gráfica, como em acessos à servidores remotos.
+
+\subsection{Em uma rede com vários processos acontecendo ao mesmo tempo é possível gerenciar de forma isolada um único processo
+        específico na rede utilizando ferramentas/sniffers apresentados nesta disciplina? Se sim, quais ferramentas e/ou sniffers você usaria?
+        Justifique sua resposta. (OBS: Não é necessário apresentar comandos ou prints)}
+
+É possível sim, e de forma realtivamente simples. Com ambos o TCPDUMP quanto o Wireshark, isso pode ser feito.
+No caso do TCPDUMP isso é mais complexo, uma vez que não é possível filtrar as transmissões por um PID do processo.
+Precisamos primeiro identificar ou o endereço que o processo está se comunicando, ou por quais portas por meio do \emph{netstat}.
+Uma vez que isso é identificado, podemos simplesmente utilizar o filtro do TCPDUMP para mostrar somente pacotes que tenham essas
+características.
+
+Já o Wireshark oferece filtros que tornam essa tarefa mais simples. Com ele podemos simplesmente filtrar pacotes pelo nome do processo local (eg. \emph{chrome}).
+Além disso com o Wireshark, é possível acompanhar as transferências de uma conexão TCP mais fácilmente, então uma vez identificada que conexão queremos monitorar, basta apenas filtrá-la.
 \end{document}
