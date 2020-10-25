@@ -249,9 +249,9 @@ Isso é pelo fato de que o método \emph{htonl} aceitar um valor do tipo `uint32
 
 Para isso, essa linha foi substituida pelo método: 
 
-\emph{inet\_pton(AF\_INET, ``192.168.0.16'', \&(servaddr.sin\_addr));}
+\emph{servaddr.sin\_addr.s\_addr = inet\_addr(``192.168.0.16'');}
 
-Que segundo o manual do linux, converte um endereço passado em forma de string para um \emph{network address}, e o preenche no destino passado, que no caso é: \textbf{\&(servaddr.sin\_addr)}.
+Que segundo o manual do linux, converte um endereço passado em forma de string para um \emph{network address} binário.
 
 E o primeiro parâmetro determina que tipo de endereço será passado, que no caso do IPv4 é \textbf{AF\_INET}.
 
@@ -285,9 +285,32 @@ Então naturalmente após também trocar a porta utilizada no cliente para \emph
 \section{Altere o código do servidor para que seja automatizado a escolha da porta e utilize sempre o
 IP da máquina que está sendo executado.}
 
+Para selectionar o IP da máquina automáticamente, iremos trocar a linha anteriormente alterada \emph{servaddr.sin\_addr.s\_addr = inet\_addr(``192.168.0.16'');} para: 
+
+\emph{servaddr.sin\_addr.s\_addr = INADDR\_ANY;}
+
+\bigbreak
+
+Utilizando o valor \textbf{INADDR\_ANY} como endereço, quando for realizado o comando \emph{bind}, 
+o socket será atibuído à todos os endereços de todas as interfaces de rede disponíveis. 
+Assim qualquer requisição a algum dos endereços disponíveis será respondida.
+
+\bigbreak
+
+Já para selecionar a porta automaticamente, utilizamos o valor \emph{0}. Então no momento da execução do método \emph{bind}, uma porta aleatória será atribuída.
 
 \section{Liste as chamadas de sistema necessárias para um servidor escutar conexões futuras.
 Justifique.}
+
+Na sequência, as chamadas de sistema necessárias para o servidor escutar conexões futuras:
+
+\emph{socket()}: Criação do socket
+
+\emph{bind()}: Atribuir ao socket o endereço IP e porta selecionadas
+
+\emph{listen()}: Colocar o socket em modo passivo aguardando conexões de clientes
+
+\emph{accept()}: (Em loop) Aceita conexão de clientes e cria um socket.
 
 \section{Adicione comentários necessários ao código. (Não precisa anexar esta questão no relatório. Os
 comentários serão analisados no código enviado)}
@@ -301,5 +324,22 @@ valores na saída padrão.}
 
 \section{É possível usar o programa telnet no lugar do binário do cliente.c? Justifique e comprove sua
 resposta.}
+
+É possível sim, uma vez que o binário do cliente.c somente estabelece a conexão, e escreve na tela o que é recebido do servidor.
+
+\bigbreak
+
+Podemos ter um comportamento similar com o \emph{telnet} utilizando:
+
+\begin{lstlisting}[language=bash]
+  telnet 127.0.0.1 49745
+  Trying 127.0.0.1...
+  Connected to 127.0.0.1.
+  Escape character is '^]'.
+  Sat Oct 24 20:58:19 2020
+  Connection closed by foreign host.  
+\end{lstlisting}
+
+Então no caso, o comportamento foi equiparável, uma vez que ele conseguiu se conectar ao servidor, recebeu as mensagens e as imprimiu na tela.
 
 \end{document}
