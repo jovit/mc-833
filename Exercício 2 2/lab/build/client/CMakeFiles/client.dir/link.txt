@@ -1,0 +1,1 @@
+/usr/bin/c++   -Wall -Werror -std=c++11   CMakeFiles/client.dir/src/main.cpp.o CMakeFiles/client.dir/src/methods.cpp.o  -o client  -Wl,-rpath,"/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/socketutils" ../socketutils/libsocketutils.so 

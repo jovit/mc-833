@@ -1,0 +1,166 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[brazil]{babel}
+\usepackage[]{algorithm}
+\usepackage[]{algorithmic}
+
+\usepackage[style=numeric,backend=biber]{biblatex}
+\usepackage[utf8]{inputenc}
+\usepackage{kpfonts}
+\usepackage[T1]{fontenc}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{lipsum}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{color}
+\usepackage{afterpage}
+\usepackage[inline]{enumitem}
+\usepackage{pdflscape}
+\usepackage{listingsutf8}
+\usepackage{siunitx}
+\usepackage{bashful}
+
+\usepackage[margin=1in]{geometry}
+
+\lstset{frame=tb,
+  aboveskip=2mm,
+  belowskip=2mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle=\footnotesize,,
+  numbers=left,
+  numbersep=5pt,
+  stepnumber=1,
+  breaklines=true,
+  keepspaces=true,
+  breakatwhitespace=true,
+  showtabs=false,  
+  tabsize=2
+}
+
+
+% Definindo estilo para os códigos
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{backgroundColour}{rgb}{0.97,0.97,0.97}
+
+\lstset{basicstyle=\ttfamily,
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    commentstyle=\color{dkgreen},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false\textbf{,}         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=bash
+}
+
+\lstdefinestyle{BStyle}{
+    backgroundcolor=\color{backgroundColour},  
+    showstringspaces=false,
+    numbers=none,
+    language=bash
+}
+
+\pagenumbering{arabic}
+\renewcommand{\thesection}{\arabic{section}}
+
+\bibliography{ref}
+\renewcommand{\contentsname}{Sumário}{\thispagestyle{empty}}
+\renewcommand{\baselinestretch}{1.5} 
+
+\begin{document}
+
+\begin{titlepage}
+        \begin{center}
+                \vspace*{1cm}
+                \includegraphics[width=0.25\textwidth]{Logo}\\
+                \vspace{1.5cm}
+                \Huge
+                \textbf{Exercício 2.2}\\
+                \vspace{1.5cm}
+                \Large
+                \textbf{Aluno}: João Vitor Gonçalves\\
+                \textbf{RA}: 176353\\
+                \vspace{1.2cm}
+                \Large
+                Instituto de Computação\\
+                Universidade Estadual de Campinas\\
+                \vspace{1.5cm}
+                Campinas, 30 de Outubro de 2020.
+        \end{center}
+\end{titlepage}
+\tableofcontents
+\clearpage
+
+\newcommand{\shellcmd}[1]{\texttt{\footnotesize\# #1}}%estilizando citação de comandos do shell
+
+% \section{Insertion Sort}
+
+% \subsubsection{Pseudocódigo}
+% \begin{algorithm}
+% \caption{InsertionSort(A)}
+% \begin{algorithmic}[1]
+%     \STATE $A[0] \longleftarrow -\alpha$
+%   \STATE $i \longleftarrow 2 $
+%     \FOR {$i$ to $N $} 
+%             \STATE $j \longleftarrow i$
+
+%             \WHILE{$A[j] > A[j-1]$} 
+%                 \STATE $T \longleftarrow A[j-1]$ 
+%                 \STATE $A[j-1] \longleftarrow A[j]$ 
+%                 \STATE $A[j] \longleftarrow T$ 
+%                 \STATE $j = j -1$
+%             \ENDWHILE
+%     \ENDFOR
+%     \RETURN $A$
+%     \end{algorithmic}
+% \end{algorithm}
+
+
+
+\section{Adicione a função sleep no servidor.c da atividade prática anterior antes do socket ser fechado
+close(connfd) de modo que o servidor ''segure'' a conexão do primeiro cliente que se conectar. Com
+essa modificação, o servidor aceita a conexão de dois clientes de forma concorrente ? Comprove sua
+resposta através de testes.}
+
+Com essa modificação, o servidor ainda não consegue aceitar conexões de dois clientes de forma concorrente, o que é compreensível, uma vez que o tratamento das chamadas de conexão dos clientes é feito num loop em uma única thread.
+
+Então o que ocorre é que o servidor aceita a primeira conexão, realiza o sleep, e somente após o sleep e fechar a primeira conexão, aceita a segunda conexão pendente e responde o cliente.
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{serv.png}
+  \caption{Execução do servidor.}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{cliente1.png}
+  \caption{Execução do cliente 1.}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{cliente2.png}
+  \caption{Execução do cliente 2.}
+\end{figure}
+
+Então como podemos ver pelas imagens. Com um sleep de 5 segundos, o servidor responde o segundo cliente exatamente 5 segundos após o primeiro.
+
+\end{document}

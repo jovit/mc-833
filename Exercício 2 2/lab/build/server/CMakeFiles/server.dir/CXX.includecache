@@ -1,0 +1,40 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../server/include/methods.h
+
+../socketutils/include/SocketUtils.h
+arpa/inet.h
+-
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/server/src/methods.cpp
+methods.h
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/server/src/methods.h
+arpa/inet.h
+-
+stdio.h
+-
+string.h
+-
+errno.h
+-
+stdlib.h
+-
+iostream
+-
+string
+-
+SocketUtils.h
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/server/src/SocketUtils.h
+

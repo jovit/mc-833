@@ -107,6 +107,8 @@ int main(int argc, char **argv)
       snprintf(buf, sizeof(buf), "%.24s\r\n", ctime(&ticks)); // write current timestamp string to buffer
       write(connfd, buf, strlen(buf));                        // send buffer to the accepted socket connection
 
+      sleep(5);
+
       close(connfd); // close connection
    }
 

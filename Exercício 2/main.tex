@@ -342,4 +342,37 @@ Podemos ter um comportamento similar com o \emph{telnet} utilizando:
 
 Então no caso, o comportamento foi equiparável, uma vez que ele conseguiu se conectar ao servidor, recebeu as mensagens e as imprimiu na tela.
 
+
+\section{Execução}
+
+\subsection{Compilando}
+\begin{lstlisting}[language=bash]
+gcc -Wall -o cliente cliente.c
+gcc -Wall -o servidor servidor.c
+\end{lstlisting}
+
+\subsection{Executando}
+\begin{lstlisting}[language=bash]
+  ./servidor 
+
+  *****************************
+  Server address = 0.0.0.0
+  Server port number = 56763
+  *****************************  
+\end{lstlisting}
+
+Será impresso a porta em que o servidor foi executado, ela precisa ser passada por argumento para o cliente.
+
+
+\begin{lstlisting}[language=bash]
+./cliente 127.0.0.1 56763
+
+*****************************
+Local address = 127.0.0.1
+Local port number = 43002
+*****************************
+Tue Oct 27 22:06:20 2020
+\end{lstlisting}
+
+
 \end{document}

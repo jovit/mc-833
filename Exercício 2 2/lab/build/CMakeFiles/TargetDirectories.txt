@@ -1,0 +1,11 @@
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/CMakeFiles/rebuild_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/CMakeFiles/edit_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/client/CMakeFiles/rebuild_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/client/CMakeFiles/edit_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/client/CMakeFiles/client.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/socketutils/CMakeFiles/rebuild_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/socketutils/CMakeFiles/edit_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/socketutils/CMakeFiles/socketutils.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/server/CMakeFiles/rebuild_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/server/CMakeFiles/edit_cache.dir
+/home/joao/Documents/repos/mc-833/Exercício 2.2/lab/build/server/CMakeFiles/server.dir

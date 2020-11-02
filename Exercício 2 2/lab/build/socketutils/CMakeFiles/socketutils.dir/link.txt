@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -Wall -Werror -std=c++11  -shared -Wl,-soname,libsocketutils.so -o libsocketutils.so CMakeFiles/socketutils.dir/src/SocketUtils.cpp.o 
