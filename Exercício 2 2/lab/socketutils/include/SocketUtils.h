@@ -17,5 +17,6 @@ namespace SocketUtils
     void Getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
     void Inet_ntop(int family, const void *src, char *dst, socklen_t size);
     ssize_t Readline(int fd, char *ptr, ssize_t maxlen);
+    ssize_t Readall(int fd, char *ptr, ssize_t maxlen);
     ssize_t Writen(int fd, const char *ptr, size_t len);
 } // namespace SocketUtils

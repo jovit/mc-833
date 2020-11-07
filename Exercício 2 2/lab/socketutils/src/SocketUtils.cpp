@@ -127,10 +127,49 @@ ssize_t SocketUtils::Readline(int fd, char *ptr, ssize_t maxlen)
     return (n);
 }
 
+ssize_t readall(int fd, char *vptr, ssize_t maxlen)
+{
+    ssize_t n, rc;
+    char c, *ptr;
+
+    ptr = vptr;
+    for (n = 1; n < maxlen; n++)
+    {
+        if ((rc = read(fd, &c, 1)) == 1)
+        {
+            *ptr++ = c;
+            if (c == '\0'){
+                break;}
+        }
+        else if (rc == 0)
+        {
+            if (n == 1)
+                return (0); /* EOF, no data read */
+            else
+                break; /* EOF, some data was read */
+        }
+        else
+            return (-1); /* error */
+    }
+
+    *ptr = 0;
+    return (n);
+}
+
+// reads until \0
+ssize_t SocketUtils::Readall(int fd, char *ptr, ssize_t maxlen)
+{
+    ssize_t n;
+
+    if ((n = readall(fd, ptr, maxlen)) == -1)
+        perror("readall error");
+    return (n);
+}
+
 ssize_t SocketUtils::Writen(int fd, const char *ptr, size_t len)
 {
     size_t bytes_sent = (0);
-    size_t bytes_to_send = len;
+    size_t bytes_to_send = len + 1;
 
     while (bytes_to_send > 0)
     {

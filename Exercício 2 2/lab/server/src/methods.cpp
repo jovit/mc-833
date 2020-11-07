@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <array>
 
 #include "SocketUtils.h"
 
@@ -30,49 +32,68 @@ int init_socket(int port)
     return sockfd;
 }
 
-
-void print_connection_info(struct sockaddr_in addr, socklen_t len)
+void print_connection_info(std::ostream &s, struct sockaddr_in addr, socklen_t len)
 {
     char address_name[128];
 
     SocketUtils::Inet_ntop(AF_INET, &(addr.sin_addr), address_name, sizeof(address_name));
 
-    std::cout << std::endl
-              << "******************************" << std::endl;
-    std::cout << "*** Received message from: ***" << std::endl;
-    std::cout << "******************************" << std::endl;
-    std::cout << "* Client address = " << address_name << " *" << std::endl;
-    std::cout << "* Client port number = " << ntohs(addr.sin_port) << " *" << std::endl;
-    std::cout << "******************************" << std::endl
-              << std::endl;
+    s << "******************************" << std::endl;
+    s << "* Client address = " << address_name << " *" << std::endl;
+    s << "* Client port number = " << ntohs(addr.sin_port) << " *" << std::endl;
+    s << "******************************" << std::endl
+      << std::endl;
 }
 
-void accept_connections(int fd)
+void accept_connections(int listenfd)
 {
-    char receive_line[MAXLINE];
+    std::array<std::string, 6> commands = {"ls", "pwd", "ls -la", "echo 'lalala' > hello", "cat hello", "rm hello"};
+
+    std::ofstream logfile("logs");
+    if (!logfile.is_open())
+    {
+        std::cout << "Unable to open file" << std::endl;
+        exit(1);
+    }
+
     for (;;) // keep accepting connections as they come
     {
         struct sockaddr_in addr;
         socklen_t len = sizeof(addr);
-        int connfd = SocketUtils::Accept(fd, (struct sockaddr *)&addr, &len);
+        int connfd = SocketUtils::Accept(listenfd, (struct sockaddr *)&addr, &len);
+
+        print_connection_info(logfile, addr, len);
+        logfile << "New connection!" << std::endl;
 
         if (fork() == 0)
         {
-            close(fd);
-            while (true)
+            close(listenfd);
+            for (const std::string &command : commands)
             {
-                if (SocketUtils::Readline(connfd, receive_line, MAXLINE) == 0)
+                char received[MAXLINE];
+                SocketUtils::Writen(connfd, command.c_str(), command.length());
+
+                if (SocketUtils::Readall(connfd, received, MAXLINE) == 0)
                 {
-                    std::cout << "Client connection closed" << std::endl;
+                    print_connection_info(logfile, addr, len);
+                    logfile << "Connection closed!" << std::endl;
+
                     close(connfd);
+                    logfile.close();
                     exit(0);
                 }
 
-                print_connection_info(addr, len);
-                std::cout << "Received message: " << receive_line << std::endl;
+                // std::cout << "Received response from:" << std::endl;
+                logfile << "Received response from:" << std::endl;
+                // print_connection_info(std::cout, addr, len);
+                print_connection_info(logfile, addr, len);
+                // std::cout <<  receive_line << std::endl;
+                logfile << received << std::endl;
 
-                SocketUtils::Writen(connfd, receive_line, strlen(receive_line));
+                SocketUtils::Writen(connfd, received, strlen(received));
             }
+            close(connfd);
+            exit(0);
         }
 
         close(connfd); // close connection
