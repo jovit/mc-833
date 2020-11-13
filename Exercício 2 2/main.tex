@@ -163,4 +163,94 @@ Então o que ocorre é que o servidor aceita a primeira conexão, realiza o slee
 
 Então como podemos ver pelas imagens. Com um sleep de 5 segundos, o servidor responde o segundo cliente exatamente 5 segundos após o primeiro.
 
+\section{Com base ainda no seu código, é correto afirmar que os clientes nunca receberão FIN neste
+caso já que o servidor sempre ficará escutando (LISTEN)? Justifique.}
+Sim, é correto. Uma vez que o servidor nunca fecha a conexão com o cliente, e está perpetuamente ouvindo, o \emph{FIN} nunca será enviado.
+
+No caso da implementação particular, isso só não é verdade no caso do cliente enviar uma cadeia de caracteres igual à \emph{exit}, então o servidor irá finalizar a conexão.
+
+\section{Comprove, utilizando ferramentas do sistema operacional, que os processos criados para
+manipular cada conexão individual do servidor aos clientes são filhos do processo original que
+foi executado.}
+
+O processo pai do servidor foi executado na porta 8585, então espera-se que exista um processo listening na porta 8585.
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{parent.png}
+  \caption{Identificando processo pai.}
+\end{figure}
+
+Então usando o comando \emph{lsof} podemos identificar o PID desse processo, que no caso é \textbf{26194}.
+
+Então por meio do compando \emph{ps} conseguimos listar todos os processos filhos desse PID:
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{no_child.png}
+  \caption{Identificando processos filhos.}
+\end{figure}
+
+Como ainda não temos nenhum cliente sendo executado, essa listagem vem vazia, mas assim que executamos dois filhos em concorrência, observamos:
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{2_child.png}
+  \caption{Identificando processos filhos.}
+\end{figure}
+
+E caso a execução de um dos filhos seja interrompida por meio do comando \emph{exit}, temos:
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{1_child.png}
+  \caption{Identificando processos filhos.}
+\end{figure}
+
+Então como podemos observar, o servidor cria novos processos filhos no caso de novas conexões, e os finaliza no caso de desconexão.
+
+\section{Detalhes de implementação}
+
+Esse projeto foi implementado em c++, com o uso da ferramenta \emph{cmake} para simplificar o processo de compilação.
+
+Para compilar o projeto deve ser executado:
+
+\begin{lstlisting}[language=bash]
+  cd build
+  cmake ..
+  make
+\end{lstlisting}
+
+O cmake é uma ferramenta utilizada para gerar os MakeFiles de forma automática, pode ser olhado com detalhes que comandos são utilizados para realizar a compilação nos arquivos CMakeLists.txt nas pastas \emph{client/}, \emph{server/} e \emph{socketutils/}.
+
+Como a proposta das funções envelopadoras é para serem reutilizadas em projetos futuros, esses métodos foram externados no projeto \emph{socketutils}, que é importado como biblioteca externa no \emph{server} e \emph{client}.
+
+\subsection{Execução}
+
+O processo do servidor deve ser executado da seguinte forma:
+\begin{lstlisting}[language=bash]
+  ./server/server <PORT>
+\end{lstlisting}
+
+O processo do cliente deve ser executado da seguinte forma:
+\begin{lstlisting}[language=bash]
+  ./client/client <SERVER IP> <SERVER PORT>
+\end{lstlisting}
+
+\subsection{Comando exit no cliente}
+Para que seja possível o cliente capturar o stdin do input, sem bloquear a execução do processo, isso foi feito em uma thread separada da principal. Então à cada execução de um comando do servidor, o cliente irá aguardar 1 segundo por um input do terminal.
+
+Como o cliente escreve o echo na saída padrão, o que está sendo escrito pode acabar se perdendo no meio das linhas sendo printadas, mas se for escrito a cadeia \emph{exit} seguido de um enter, o comando será reconhecido.
+
+\subsection{Arquivos de log}
+
+O servidor irá criar um arquivo para cada conexão aberta para escrever os detalhes. O nome dos arquivos segue o modelo <client-ip>-<client-port>.log
+
+É possível acompanhar a saída de todos os arquivos simultaneamente usando:
+\begin{lstlisting}[language=bash]
+  tail -F *.log
+\end{lstlisting}
+
+Isso foi feito para não termos que lidar com escritas concorrentes dos múltiplos processos.
+
+\subsection{Envio de comandos}
+
+Os comandos serão enviados do servidor para o cliente com um intervalo de 2 segundos para não deixar o stdout do cliente muito rápido.
+
 \end{document}

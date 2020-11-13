@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
     int sockfd = init_socket(port);
 
-    accept_connections(sockfd);
+    accept_connections(sockfd); // loops receiving connections
 
     return 0;
 }

@@ -1,20 +1,10 @@
 #include "methods.h"
 
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <iostream>
-#include <cstdio>
-#include <memory>
-#include <stdexcept>
-#include <array>
-
-#include "SocketUtils.h"
-
 #define MAXLINE 4096
 
+using namespace std;
+
+// initialize the clients socket
 int init_socket(char *ip, int port)
 {
     struct sockaddr_in servaddr;
@@ -41,14 +31,14 @@ void print_local_connection_info(int fd)
     SocketUtils::Getsockname(fd, (struct sockaddr *)&addr, &len);
     SocketUtils::Inet_ntop(AF_INET, &(addr.sin_addr), address_name, sizeof(address_name));
 
-    std::cout << std::endl
-              << "*****************************" << std::endl;
-    std::cout << "*** Local connection info ***" << std::endl;
-    std::cout << "*****************************" << std::endl;
-    std::cout << "* Local address = " << address_name << " *" << std::endl;
-    std::cout << "* Local port number = " << ntohs(addr.sin_port) << " *" << std::endl;
-    std::cout << "*****************************" << std::endl
-              << std::endl;
+    cout << endl
+         << "*****************************" << endl;
+    cout << "*** Local connection info ***" << endl;
+    cout << "*****************************" << endl;
+    cout << "* Local address = " << address_name << " *" << endl;
+    cout << "* Local port number = " << ntohs(addr.sin_port) << " *" << endl;
+    cout << "*****************************" << endl
+         << endl;
 }
 
 void print_server_connection_info(int fd)
@@ -60,24 +50,24 @@ void print_server_connection_info(int fd)
     SocketUtils::Getpeername(fd, (struct sockaddr *)&addr, &len);
     SocketUtils::Inet_ntop(AF_INET, &(addr.sin_addr), address_name, sizeof(address_name));
 
-    std::cout << std::endl
-              << "******************************" << std::endl;
-    std::cout << "*** Server connection info ***" << std::endl;
-    std::cout << "******************************" << std::endl;
-    std::cout << "* Server address = " << address_name << " *" << std::endl;
-    std::cout << "* Server port number = " << ntohs(addr.sin_port) << " *" << std::endl;
-    std::cout << "******************************" << std::endl
-              << std::endl;
+    cout << endl
+         << "******************************" << endl;
+    cout << "*** Server connection info ***" << endl;
+    cout << "******************************" << endl;
+    cout << "* Server address = " << address_name << " *" << endl;
+    cout << "* Server port number = " << ntohs(addr.sin_port) << " *" << endl;
+    cout << "******************************" << endl
+         << endl;
 }
 
-std::string exec_command(const char *cmd)
+string exec_command(const char *cmd)
 {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    array<char, 128> buffer;
+    string result;
+    unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
     if (!pipe)
     {
-        throw std::runtime_error("popen() failed!");
+        throw runtime_error("popen() failed!");
     }
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
     {
@@ -86,33 +76,55 @@ std::string exec_command(const char *cmd)
     return result;
 }
 
-void start_cli(int fd)
+bool check_exit_command()
 {
-    std::string input;
-    char receive_line[MAXLINE];
+    string input;
 
     while (true)
     {
-        if (SocketUtils::Readall(fd, receive_line, MAXLINE) == 0)
+        getline(cin, input);
+        if (input == "exit")
         {
-            std::cout << "Connection closed!" << std::endl;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void start_cli(int fd)
+{
+    string input;
+    char received_line[MAXLINE];
+    chrono::seconds timeout(1);
+    future<bool> should_exit_future = async(check_exit_command);
+
+    while (true)
+    {
+        if (should_exit_future.wait_for(timeout) == future_status::ready && should_exit_future.get())
+        {
+            string exit_command = "exit";
+            SocketUtils::Writen(fd, exit_command.c_str(), exit_command.length());
+            break;
+        }
+
+        if (SocketUtils::Readall(fd, received_line, MAXLINE) == 0)
+        {
             close(fd);
             exit(0);
         }
 
-        std::string result = exec_command(receive_line);
+        string result = exec_command(received_line);
 
         SocketUtils::Writen(fd, result.c_str(), result.length());
 
-        if (SocketUtils::Readall(fd, receive_line, MAXLINE) == 0)
-        {
-            std::cout << "Connection closed!" << std::endl;
-            close(fd);
-            exit(0);
-        }
-
-        std::string received_str = std::string(receive_line);
-        std::cout << "Received from server (reversed): " << std::string(received_str.rbegin(), received_str.rend()) << std::endl<< std::endl<< std::endl<< std::endl;
-
+        string received_str = string(received_line);
+        cout << "Received from server (reversed): " << string(received_str.rbegin(), received_str.rend()) << endl
+             << endl
+             << endl
+             << endl;
     }
+
+    close(fd);
+    exit(0);
 }
