@@ -175,10 +175,42 @@ comprove a partir de qual valor de backlog as conexões não ocorrem imediatamen
 Elabore um esquema para tentar conectar 10 clientes de forma simultânea (Veja as
 dicas logo abaixo).}
 
+Foi criado um script \emph{run-multiple.sh} que realiza a compilação dos serviços e inicializa o servidor e 10 clientes conectados.
+
+O servidor foi modificado para realizar um accept à cada 5 segundos com o uso de um \emph{sleep}, como forma de podermos observar quantos clientes conseguem se conectar instantaneamente para um dado \emph{backlog}.
+
+Foi usado o comando \emph{sudo netstat -taulpn | grep PORT} para monitorar os estados da conexão TCP, onde conexões com o estado \emph{SYN\_SENT} não foram ainda movidas para a fila de accept, devido ela estar cheia.
+
+Foi verificado que para à partir de \textbf{9} como valor no \emph{backlog}, todas as conexões iam para o estado \emph{ESTABLISHED} imediatamente, ou seja, todas as conexões couberam na fila de \emph{accept}.
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{9-back.png}
+  \caption{Resultado das conexões com 9 de backlog.}
+\end{figure}
+
+Para valores inferiores, conexões ficaram no estado \emph{SYN\_SENT} até mais conexões serem consumidas da fila de \emph{accept}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{8back.png}
+  \caption{Resultado das conexões com 8 de backlog.}
+\end{figure}
+
+Quanto menor o tamanho da fila definida pelo backlog, mais conexões ficam em estado incompleto inicialmente.
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{0back.png}
+  \caption{Resultado das conexões com 0 de backlog.}
+\end{figure}
+
 \section{É correto afirmar que o código na versão atual gera processo zumbi? Explique. Se a
 sua resposta foi sim, então altere o código da questão 3 de modo que os processos
 criados pelo fork sejam corretamente finalizados ao invés de permanecerem no estado
 zumbi quando um cliente encerra sua conexão.}
+No caso da execução do servidor ser interrompida por um comando \emph{CTRL C} ou \emph{CTRL D}, podem permanecer conexões não fechadas adequadamente.
+
+Além disso, na finalização de um processo filho, onde o sinal SIGCHILD é enviado, esse sinal não está sendo tratado no processo pai, então ficam processos zumbi para trás.
+
+
 
 % \subsubsection{Pseudocódigo}
 % \begin{algorithm}
