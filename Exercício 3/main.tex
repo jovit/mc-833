@@ -206,9 +206,34 @@ Quanto menor o tamanho da fila definida pelo backlog, mais conexões ficam em es
 sua resposta foi sim, então altere o código da questão 3 de modo que os processos
 criados pelo fork sejam corretamente finalizados ao invés de permanecerem no estado
 zumbi quando um cliente encerra sua conexão.}
+
 No caso da execução do servidor ser interrompida por um comando \emph{CTRL C} ou \emph{CTRL D}, podem permanecer conexões não fechadas adequadamente.
 
-Além disso, na finalização de um processo filho, onde o sinal SIGCHILD é enviado, esse sinal não está sendo tratado no processo pai, então ficam processos zumbi para trás.
+Além disso, na finalização de um processo filho, onde o sinal SIGCHILD é enviado, esse sinal não está sendo tratado no processo pai, então ficam processos zumbis para trás.
+
+Então o servidor foi modificado para tratar o sinal \emph{SIGCHLD} no processo pai:
+
+
+Então seja o processo do servidor pai com \emph{PID} \textbf{22873}, esses são os processos criados para os filhos:
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{before.png}
+  \caption{Processos filhos criados.}
+\end{figure}
+
+Então foi finalizado o cliente responsável pelo processo filho de PID \emph{23015}.
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{pa.png}
+  \caption{Processo filho finalizado no servidor.}
+\end{figure}
+
+
+Então checando novamente os processos filhos, podemos notar que o processo foi removido, sem geração de processo zumbi.
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{before.png}
+  \caption{Processos filhos após finalização.}
+\end{figure}
+
 
 
 
