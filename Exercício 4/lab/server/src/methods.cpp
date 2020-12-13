@@ -2,6 +2,7 @@
 
 #define MAXLINE 4096
 #define LISTENQ 0
+#define MAX_CONNECTIONS 100
 
 using namespace std;
 
@@ -23,79 +24,92 @@ int init_socket(int port)
     return sockfd;
 }
 
-// print the connection info from the client
-void print_connection_info(ostream &s, struct sockaddr_in addr, socklen_t len)
-{
-    char address_name[128];
-
-    SocketUtils::Inet_ntop(AF_INET, &(addr.sin_addr), address_name, sizeof(address_name));
-
-    s << "******************************" << endl;
-    s << "* Client address = " << address_name << " *" << endl;
-    s << "* Client port number = " << ntohs(addr.sin_port) << " *" << endl;
-    s << "******************************" << endl
-      << endl;
-}
-
-void print_connection_closed(ostream &s, struct sockaddr_in addr, socklen_t len)
-{
-    s << "Connection closed!" << endl;
-    print_connection_info(s, addr, len);
-}
-
-void sig_chld(int signo)
-{
-    pid_t pid;
-    int stat;
-
-    while ((pid = waitpid(-1, &stat, WNOHANG)) > 0)
-    {
-        cout << "child terminated " << pid << endl;
-    }
-    return;
-}
-
 void accept_connections(int listenfd)
 {
-    SocketUtils::Signal(SIGCHLD, sig_chld);
+    struct pollfd clients[MAX_CONNECTIONS];
 
+    clients[0].fd = listenfd;
+    clients[0].events = POLLRDNORM;
+
+    for (int i = 1; i < MAX_CONNECTIONS; i++)
+    {
+        clients[i].fd = -1;
+    }
+
+    int maxi = 0;
     for (;;) // keep accepting connections as they come
     {
-        struct sockaddr_in addr;
-        socklen_t len = sizeof(addr);
-        int connfd = SocketUtils::Accept(listenfd, (struct sockaddr *)&addr, &len);
-        if (errno == EINTR)
-        {
-            continue;
-        }
+        cout << "Awaiting for events" << endl;
+        int nready = SocketUtils::Poll(clients, maxi + 1, INFTIM);
+        cout << "Event received" << endl;
 
-        if (fork() == 0)
-        {
-            cout << "New connection!" << endl;
-            print_connection_info(cout, addr, len);
-
-            close(listenfd);
-            while (true)
+        if (clients[0].revents & POLLRDNORM)
+        { // new connection event
+            cout << "New connection" << endl;
+            struct sockaddr_in addr;
+            socklen_t len = sizeof(addr);
+            int connfd = SocketUtils::Accept(listenfd, (struct sockaddr *)&addr, &len);
+            if (errno == EINTR)
             {
-                char received[MAXLINE];
-                cout << "reading" << endl;
-                if (SocketUtils::Readall(connfd, received, MAXLINE) <= 0)
-                { // there's nothing to read, the connection has been closed
-                    print_connection_closed(cout, addr, len);
-                    close(connfd);
-                    exit(0);
-                }
-                cout << "read " << received << endl;
+                continue;
+            }
+            cout << "Connection accepted" << endl;
 
-                cout << "writing" << endl;
-                SocketUtils::Writen(connfd, received, strlen(received));
-                cout << "written" << endl;
+            bool success = false;
+            for (int i = 1; i < MAX_CONNECTIONS; i++)
+            {
+                if (clients[i].fd < 0)
+                {
+                    clients[i].fd = connfd; // store connected client descriptor
+                    clients[i].events = POLLRDNORM;
+                    success = true;
+                    if (i > maxi)
+                    {
+                        maxi = i;
+                    }
+
+                    break;
+                }
             }
 
-            close(connfd);
-            exit(0);
+            if (!success)
+            {
+                cout << "No empty poll available for connection" << endl;
+                exit(1);
+            }
+
+            if (--nready <= 0)
+            { // check if there are events remaining
+                continue;
+            }
         }
 
-        close(connfd); // close connection
+        for (int i = 1; i <= maxi; i++)
+        { /* check all clients for data */
+            if (clients[i].fd < 0)
+            {
+                continue;
+            }
+
+            if (clients[i].revents & (POLLRDNORM | POLLERR))
+            {
+                int connfd = clients[i].fd;
+                char received[MAXLINE];
+                if (SocketUtils::Readall(connfd, received, MAXLINE) <= 0)
+                { // there's nothing to read, the connection has been closed
+
+                    cout << "Connection closed" << endl;
+                    close(connfd);
+                    clients[i].fd = -1;
+                    continue;
+                }
+
+                SocketUtils::Writen(connfd, received, strlen(received));
+                if (--nready <= 0)
+                { // check if there are events remaining
+                    break;
+                }
+            }
+        }
     }
 }
