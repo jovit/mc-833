@@ -121,4 +121,36 @@
 
 \newcommand{\shellcmd}[1]{\texttt{\footnotesize\# #1}}%estilizando citação de comandos do shell
 
+\section{Cite um exemplo para uso de multiplexação de entrada e saída.}
+Como sabemos, podemos usar a multiplexação de entrada e saída para podermos realizar operações de entrada e saída de forma não bloqueante.
+
+Então por exemplo, podemos monitorar multiplas entradas de dados paralelamente sem bloquear o processo, como ler ao mesmo tempo de um arquivo e da entrada padrão, sem necessidade de criar processos filhos ou threads separadas, assim economizando recursos.
+
+Algumas ferramentas de desenvolvimento web, como o NodeJS utilizam como padrão a multiplexação de entrada e saída para atender requisições de múltiplos clientes num servidor, tendo apenas um processo e thread principais.
+
+\section{Compilação e execução}
+
+Para realizar a compilação da aplicação, basta executar o script \emph{build.sh} fornecido.
+
+\begin{lstlisting}[language=bash]
+    ./lab/build.sh
+\end{lstlisting}
+
+Será criada uma pasta \emph{build} com os binários dos processos.
+
+Para executar o servidor basta executar:
+
+\begin{lstlisting}[language=bash]
+    ./lab/build/server/server [PORT]
+\end{lstlisting}
+
+Para executar o cliente basta executar:
+\begin{lstlisting}[language=bash]
+    ./lab/build/client/client [IP] [PORT] < IN_FILE > OUT_FILE
+\end{lstlisting}
+
+O cliente irá enviar o conteúdo do arquivo para o servidor e receber os dados do mesmo paralelamente por meio de multiplexação de entrada e saída. Quando essa transferência for finalizada, o processo irá terminar.
+
+O servidor suporta multiplos clientes conectados por meio de multiplexação de entrada e saída, com no máximo 100 clientes conectados simultaneamente.
+
 \end{document}
