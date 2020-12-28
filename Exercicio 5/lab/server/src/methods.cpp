@@ -196,7 +196,7 @@ void accept_connections(int listenfd)
                         }
                     }
 
-                    if (player_index < 0)
+                    if (player_index < 0 || player_index == i)
                     {
                         cout << "player not found" << endl;
                         result = "failed";
