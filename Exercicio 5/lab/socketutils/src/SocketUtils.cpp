@@ -141,7 +141,7 @@ ssize_t readline(int fd, char *vptr, ssize_t maxlen)
     for (n = 1; n < maxlen; n++)
     {
         if ((rc = read(fd, &c, 1)) == 1)
-        {                        
+        {
             *ptr++ = c;
             if (c == '\n')
                 break;
@@ -229,4 +229,23 @@ ssize_t SocketUtils::Writen(int fd, const char *ptr, size_t len)
     }
 
     return (len);
+}
+
+ssize_t SocketUtils::Recvfrom(int fd, void *ptr, size_t nbytes, int flags, struct sockaddr *addr, socklen_t *addrlen)
+{
+    ssize_t n;
+
+    if ((n = recvfrom(fd, ptr, nbytes, flags, addr, addrlen)) < 0)
+    {
+        perror("recvfrom error");
+    }
+    return (n);
+}
+
+void SocketUtils::Sendto(int fd, const void *ptr, size_t nbytes, int flags, const struct sockaddr *addr, socklen_t addrlen)
+{
+    if (sendto(fd, ptr, nbytes, flags, addr, addrlen) != (ssize_t)nbytes)
+    {
+        perror("sendto error");
+    }
 }

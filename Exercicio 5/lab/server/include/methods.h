@@ -11,6 +11,7 @@
 #include <array>
 #include <sstream>
 #include <sys/wait.h>
+#include <sstream>
 
 #include "SocketUtils.h"
 

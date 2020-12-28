@@ -31,4 +31,6 @@ namespace SocketUtils
     Sigfunc *Signal(int signo, Sigfunc *func);
     int Poll(struct pollfd *fdarray, unsigned long nfds, int timeout);
     void Shutdown(int fd, int how);
+    ssize_t Recvfrom(int fd, void *ptr, size_t nbytes, int flags, struct sockaddr *addr, socklen_t *addrlen);
+    void Sendto(int fd, const void *ptr, size_t nbytes, int flags, const struct sockaddr *addr, socklen_t addrlen);
 } // namespace SocketUtils

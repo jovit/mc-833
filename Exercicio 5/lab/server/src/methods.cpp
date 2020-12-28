@@ -6,6 +6,21 @@
 
 using namespace std;
 
+string get_socket_ip(int fd)
+{
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    char address_name[128];
+
+    SocketUtils::Getsockname(fd, (struct sockaddr *)&addr, &len);
+    SocketUtils::Inet_ntop(AF_INET, &(addr.sin_addr), address_name, sizeof(address_name));
+
+    stringstream ss;
+    ss << address_name;
+
+    return ss.str();
+}
+
 // inialize the socket for the server
 int init_socket(int port)
 {
@@ -28,13 +43,18 @@ void accept_connections(int listenfd)
 {
     struct pollfd clients[MAX_CONNECTIONS];
     string client_ids[MAX_CONNECTIONS];
+    int scores[MAX_CONNECTIONS];
+    string accepting_game_from[MAX_CONNECTIONS];
 
     clients[0].fd = listenfd;
     clients[0].events = POLLRDNORM;
 
     for (int i = 1; i < MAX_CONNECTIONS; i++)
     {
+        client_ids[i] = "";
+        accepting_game_from[i] = "";
         clients[i].fd = -1;
+        scores[i] = 0;
     }
 
     int maxi = 0;
@@ -103,6 +123,8 @@ void accept_connections(int listenfd)
                     close(connfd);
                     clients[i].fd = -1;
                     client_ids[i] = "";
+                    accepting_game_from[i] = "";
+                    scores[i] = 0;
                     continue;
                 }
 
@@ -146,7 +168,7 @@ void accept_connections(int listenfd)
                     {
                         if (!client_ids[j].empty() && i != j)
                         {
-                            result += "\"" + client_ids[j] + "\"" + ",";
+                            result += "\"" + client_ids[j] + "\"" + " (" + to_string(scores[j]) + ") " + ",";
                         }
                     }
                     if (result.empty())
@@ -178,14 +200,87 @@ void accept_connections(int listenfd)
                     {
                         cout << "player not found" << endl;
                         result = "failed";
-                    } else {
+                    }
+                    else if (!accepting_game_from[player_index].empty())
+                    {
+                        cout << "player already accepting game" << endl;
+                        result = "failed";
+                    }
+                    else
+                    {
+                        accepting_game_from[player_index] = client_ids[i];
+                        accepting_game_from[i] = client_ids[player_index];
+
                         cout << "sending confirmation request to user" << endl;
-                        string tosend = "play\n";
+                        string tosend = "play_request\n";
                         SocketUtils::Writen(clients[player_index].fd, tosend.c_str(), tosend.length());
                         result = "success";
                     }
 
                     result += "\n";
+                }
+                else if (command == "accept")
+                {
+                    // do game
+                    int player_index = -1;
+                    for (int j = 0; j < MAX_CONNECTIONS; j++)
+                    {
+                        if (client_ids[j] == accepting_game_from[i])
+                        {
+                            player_index = j;
+                        }
+                    }
+
+                    string tosend = "game_accepted\n";
+                    SocketUtils::Writen(clients[player_index].fd, tosend.c_str(), tosend.length());
+
+                    result = "game_accepted\n";
+                }
+                else if (command == "deny")
+                {
+                    int player_index = -1;
+                    for (int j = 0; j < MAX_CONNECTIONS; j++)
+                    {
+                        if (client_ids[j] == accepting_game_from[i])
+                        {
+                            player_index = j;
+                        }
+                    }
+                    string tosend = "deny\n";
+                    SocketUtils::Writen(clients[player_index].fd, tosend.c_str(), tosend.length());
+                    accepting_game_from[i] = "";
+                    accepting_game_from[player_index] = "";
+                    result = "success\n";
+                }
+                else if (command == "game_port")
+                {
+                    // do game
+                    int player_index = -1;
+
+                    for (int j = 0; j < MAX_CONNECTIONS; j++)
+                    {
+                        if (client_ids[j] == accepting_game_from[i])
+                        {
+                            player_index = j;
+                        }
+                    }
+
+                    string tosend = "game_ip " + get_socket_ip(clients[i].fd) + " " + recv + "\n";
+                    SocketUtils::Writen(clients[player_index].fd, tosend.c_str(), tosend.length());
+
+                    result = "ok\n";
+                }
+                else if (command == "score")
+                {
+                    int score = atoi(recv.c_str());
+                    scores[i] += score;
+                    if (scores[i] < 0)
+                    {
+                        scores[i] = 0;
+                    }
+                    accepting_game_from[i] = ""; // allow for accepting new games
+
+                    result = "score " + to_string(scores[i]) + "\n";
                 }
 
                 SocketUtils::Writen(connfd, result.c_str(), result.length());

@@ -26,6 +26,8 @@ int init_socket(char *ip, int port)
 void start_cli(int fd)
 {
     TicTacToe::Game game;
+    game.init_udp_socket();
+    
     struct pollfd polls[2]; // array of poll structures, where 0 is the server poll and 1 is the stdin
 
     polls[0].fd = fd;
