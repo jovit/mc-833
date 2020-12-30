@@ -56,7 +56,7 @@ void start_cli(int fd)
                 exit(0);
             }
             string received_str = string(received_line);
-            cout << received_str;
+            // cout << received_str;
 
             string to_send = game.handle_server_response(received_str.substr(0, received_str.length() - 1));
 

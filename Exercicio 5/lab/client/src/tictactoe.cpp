@@ -255,7 +255,7 @@ TicTacToe::GameEndState TicTacToe::Game::check_endgame()
             {
                 return TicTacToe::GameEndState::WON;
             }
-            else if (this->board[i][0] == "O")
+            else if (this->board[0][i] == "O")
             {
                 return TicTacToe::GameEndState::LOST;
             }
@@ -405,12 +405,12 @@ int TicTacToe::Game::start_game()
         }
 
         this->my_turn = !this->my_turn;
+        this->show_board();
 
         TicTacToe::GameEndState game_status = this->check_endgame();
         switch (game_status)
         {
-        case TicTacToe::GameEndState::NONE:
-            this->show_board();
+        case TicTacToe::GameEndState::NONE:    
             break;
         case TicTacToe::GameEndState::WON:
             cout << "You won the game! Congratulations!" << endl;

@@ -121,36 +121,164 @@
 
 \newcommand{\shellcmd}[1]{\texttt{\footnotesize\# #1}}%estilizando citação de comandos do shell
 
-\section{Cite um exemplo para uso de multiplexação de entrada e saída.}
-Como sabemos, podemos usar a multiplexação de entrada e saída para podermos realizar operações de entrada e saída de forma não bloqueante.
+\section{Funcionamento do exercício.}
 
-Então por exemplo, podemos monitorar multiplas entradas de dados paralelamente sem bloquear o processo, como ler ao mesmo tempo de um arquivo e da entrada padrão, sem necessidade de criar processos filhos ou threads separadas, assim economizando recursos.
+O funcionamento do programa se dá da seguinte maneira:
 
-Algumas ferramentas de desenvolvimento web, como o NodeJS utilizam como padrão a multiplexação de entrada e saída para atender requisições de múltiplos clientes num servidor, tendo apenas um processo e thread principais.
-
-\section{Compilação e execução}
-
-Para realizar a compilação da aplicação, basta executar o script \emph{build.sh} fornecido.
-
-\begin{lstlisting}[language=bash]
-    ./lab/build.sh
-\end{lstlisting}
-
-Será criada uma pasta \emph{build} com os binários dos processos.
-
-Para executar o servidor basta executar:
+Temos dois executáveis distintos, o servidor que pode ser executado da seguinte forma:
 
 \begin{lstlisting}[language=bash]
     ./lab/build/server/server [PORT]
 \end{lstlisting}
 
-Para executar o cliente basta executar:
+
+E o cliente:
 \begin{lstlisting}[language=bash]
-    ./lab/build/client/client [IP] [PORT] < IN_FILE > OUT_FILE
+    ./lab/build/client/client [SERVER_IP] [PORT]
 \end{lstlisting}
 
-O cliente irá enviar o conteúdo do arquivo para o servidor e receber os dados do mesmo paralelamente por meio de multiplexação de entrada e saída. Quando essa transferência for finalizada, o processo irá terminar.
+\bigbreak
 
-O servidor suporta multiplos clientes conectados por meio de multiplexação de entrada e saída, com no máximo 100 clientes conectados simultaneamente.
+É necessário ter o servidor sendo executado antes de iniciar o cliente.
+
+\bigbreak
+
+Ao iniciar o cliente, ele irá se conectar ao servidor, e irá pedir o input do identificador desejado.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{id_input.png}
+    \caption{Cliente pedindo input de um ID.}
+\end{figure}
+
+O cliente irá pedir a confirmação da escolha. 
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{id_input_conf.png}
+    \caption{Cliente confirmando escolha do ID.}
+\end{figure}
+
+Caso confirmado, o ID será enviado para o servidor. Que pode confirmar caso o ID esteja disponível, e negar caso já exista algum outro usuário utilizando o mesmo ID.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{id_input_success.png}
+    \caption{Seleção de ID confirmada com sucesso pelo servidor.}
+\end{figure}
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{input_id_fail.png}
+    \caption{Falha na seleção de ID.}
+\end{figure}
+
+No caso de falha, o cliente pede ao usuário para escolher um outro ID.
+
+\bigbreak
+
+Caso a seleção de um identificador seja bem sucedida. A lista de usuários disponíveis para um jogo será exibida.
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{user_list.png}
+    \caption{Listagem de usuários disponíveis para jogar.}
+\end{figure}
+
+O usuário poderá atualizar essa lista por meio do comando \emph{refresh} ou jogar com algum dos usuários disponíveis por meio do comando \emph{play <id>}. 
+
+eg:
+\begin{lstlisting}[language=bash]
+    play jovit
+\end{lstlisting}
+
+\bigbreak
+
+Caso enviado o comando de jogar, uma requisição será enviada para o cliente correspondente:
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{request_sent.png}
+    \caption{Requisição de jogo enviada.}
+\end{figure}
+
+E o usuário requisitado irá receber uma notificação perguntando se ele deseja jogar:
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{request_received.png}
+    \caption{Requisição de jogo recebida.}
+\end{figure}
+
+\bigbreak
+
+No caso de confirmação, ambos os clientes irão enviar as suas portas UDP para o servidor, que em seguida irá compartilhar o endereço IP e portas de cada um dos clientes para que eles possam se comunicar diretamente via datagramas UDP.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{udp_connection.png}
+    \caption{Teste de conexão é feito entre os clientes antes de iniciar o jogo.}
+\end{figure}
+
+\bigbreak
+
+Então em seguinda, o jogo é iniciado:
+
+\bigbreak
+
+Primeiro, cada um dos clientes sorteia um número de 0 à 100, e o usuário com o maior número joga primeiro.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{lucky_number.png}
+    \caption{Sorteio de quem irá iniciar o jogo.}
+\end{figure}
+
+\bigbreak
+
+Então é exibido o tabuleiro do jogo:
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{game_board.png}
+    \caption{Tabuleiro do jogo.}
+\end{figure}
+
+As jogadas do usuário serão exibidas com o símbolo \textbf{X} e as do oponente com o símbolo \textbf{O}.
+
+Jogadas são feitas escrevendo o número da linha seguido do número da coluna que se deseja jogar.
+
+Após cada jogada, ela é transmitida para o oponente e é checado se o jogo está finalizado.
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{game.png}
+    \caption{Tabuleiro do jogo.}
+\end{figure}
+
+\bigbreak
+
+Ao final do jogo, é atribuído pontuações da seguinte maneira: No caso de vitória, o usuário ganha 1 ponto, no caso de perda ele perde 1 ponto (com pontuação mínima de 0), e no caso de empate ele não ganha nenhum ponto.
+
+Cada um dos clientes transmite a sua pontuação para o servidor, que retorna a pontuação consolidada atual:
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{points.png}
+    \caption{Pontuação do usuário.}
+\end{figure}
+
+\bigbreak
+
+Em sequência, a lista dos usuários disponíveis é exibida, para que o jogador possa iniciar uma nova partida:
+
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{players.png}
+    \caption{Jogadores.}
+\end{figure}
+
+Na lista de jogadores disponíveis, as suas pontuações são exibidas entre parênteses após seus IDs.
+
+Por questões de simplificação de testes, o servidor só guarda a pontuação dos usuários conectados, caso um usuário se desconecte, a sua pontuação anterior é perdida. Porém as pontuações para cada identificador poderiam fácilmente ser guardadas em arquivos.
+
+\bigbreak
+
+Um caso de falha que não foi considerado no desenvolvimento, foi o caso de um cliente se desconectar durante uma partida. Nesse caso o seu oponente ficará aguardando uma jogada perpetuamente. Isso foi feito para simplificar a comunicação udp durante o jogo, que para tratar esse caso, deveria ser feita usando multiplexação de entrada e saída.
+
+\section{Compilação}
+
+Para realizar a compilação da aplicação, basta executar o script \emph{build.sh} fornecido.
+
+\begin{lstlisting}[language=bash]
+    cd ./lab
+    ./build.sh
+\end{lstlisting}
 
 \end{document}
