@@ -133,7 +133,7 @@ void accept_connections(int listenfd)
                 cout << recv << endl;
 
                 string command = recv.substr(0, recv.find(" ")); // split string by " ", the first token should be the command
-                recv.erase(0, recv.find(" ") + 1);
+                recv.erase(0, recv.find(" ") + 1); // the rest of the string will contain the params for the command
                 string result;
 
                 cout << "received command: " << command << endl;
@@ -149,7 +149,7 @@ void accept_connections(int listenfd)
                             amount++;
                         }
                     }
-                    if (amount > 1)
+                    if (amount > 1) // active user with the selected id
                     {
                         cout << "user id already taken: " << recv << endl;
                         result = "fail\n";
@@ -166,12 +166,12 @@ void accept_connections(int listenfd)
                     result = "";
                     for (int j = 0; j < MAX_CONNECTIONS; j++)
                     {
-                        if (!client_ids[j].empty() && i != j)
+                        if (!client_ids[j].empty() && i != j) // do not include users that are currently playing and myself
                         {
-                            result += "\"" + client_ids[j] + "\"" + " (" + to_string(scores[j]) + ") " + ",";
+                            result += "\"" + client_ids[j] + "\"" + " (" + to_string(scores[j]) + ") " + ","; // e.g. user_1 (points) , user_2 (points)
                         }
                     }
-                    if (result.empty())
+                    if (result.empty()) // no active users
                     {
                         result = "failed";
                     }
@@ -190,18 +190,19 @@ void accept_connections(int listenfd)
 
                     for (int j = 0; j < MAX_CONNECTIONS; j++)
                     {
-                        if (client_ids[j] == player)
+                        if (client_ids[j] == player) // only consider available players
                         {
                             player_index = j;
+                            break;
                         }
                     }
 
-                    if (player_index < 0 || player_index == i)
+                    if (player_index < 0 || player_index == i) // player id not found in active users
                     {
                         cout << "player not found" << endl;
                         result = "failed";
                     }
-                    else if (!accepting_game_from[player_index].empty())
+                    else if (!accepting_game_from[player_index].empty()) // if someone else already requested to play with this user
                     {
                         cout << "player already accepting game" << endl;
                         result = "failed";
@@ -221,7 +222,7 @@ void accept_connections(int listenfd)
                 }
                 else if (command == "accept")
                 {
-                    // do game
+                    // start game
                     int player_index = -1;
                     for (int j = 0; j < MAX_CONNECTIONS; j++)
                     {
@@ -236,7 +237,7 @@ void accept_connections(int listenfd)
 
                     result = "game_accepted\n";
                 }
-                else if (command == "deny")
+                else if (command == "deny") // refuse to play the game
                 {
                     int player_index = -1;
                     for (int j = 0; j < MAX_CONNECTIONS; j++)
@@ -252,7 +253,7 @@ void accept_connections(int listenfd)
                     accepting_game_from[player_index] = "";
                     result = "success\n";
                 }
-                else if (command == "game_port")
+                else if (command == "game_port") // share the client udp port with the other player
                 {
                     // do game
                     int player_index = -1;
@@ -270,7 +271,7 @@ void accept_connections(int listenfd)
 
                     result = "ok\n";
                 }
-                else if (command == "score")
+                else if (command == "score") // consolidate match points
                 {
                     int score = atoi(recv.c_str());
                     scores[i] += score;

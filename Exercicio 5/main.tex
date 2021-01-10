@@ -272,6 +272,11 @@ Por questões de simplificação de testes, o servidor só guarda a pontuação 
 
 Um caso de falha que não foi considerado no desenvolvimento, foi o caso de um cliente se desconectar durante uma partida. Nesse caso o seu oponente ficará aguardando uma jogada perpetuamente. Isso foi feito para simplificar a comunicação udp durante o jogo, que para tratar esse caso, deveria ser feita usando multiplexação de entrada e saída.
 
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{udp_datagram.png}
+    \caption{Pacote udp enviado durante um jogo entre clientes. O pacote se refere à uma jogada na linha \textbf{2} e coluna \textbf{3}}.
+\end{figure}
+
 \section{Compilação}
 
 Para realizar a compilação da aplicação, basta executar o script \emph{build.sh} fornecido.
